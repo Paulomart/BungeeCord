@@ -182,7 +182,7 @@ public class BungeeCord extends ProxyServer
     @Override
     public void start() throws Exception
     {
-        ResourceLeakDetector.setEnabled( false ); // Eats performance
+        ResourceLeakDetector.setLevel( ResourceLeakDetector.Level.DISABLED );// Eats performance
 
         pluginsFolder.mkdir();
         pluginManager.detectPlugins( pluginsFolder );

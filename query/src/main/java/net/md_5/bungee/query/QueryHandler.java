@@ -46,7 +46,7 @@ public class QueryHandler extends SimpleChannelInboundHandler<DatagramPacket>
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception
+    protected void messageReceived(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception
     {
         ByteBuf in = msg.content();
         if ( in.readUnsignedByte() != 0xFE || in.readUnsignedByte() != 0xFD )
