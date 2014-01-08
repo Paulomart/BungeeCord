@@ -17,6 +17,11 @@ import net.md_5.bungee.api.plugin.Cancellable;
 public class PreLoginEvent extends AsyncEvent<PreLoginEvent> implements Cancellable
 {
 
+	/**
+	 * I dont know. :(
+	 */
+	private boolean onlineMode;
+	
     /**
      * Cancelled state.
      */

@@ -67,6 +67,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     private Handshake handshake;
     @Getter
     private LoginRequest loginRequest;
+    @Getter
     private EncryptionRequest request;
     @Getter
     private List<PluginMessage> loginMessages = new ArrayList<>();
