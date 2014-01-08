@@ -358,9 +358,8 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                         finish(true);
                         return;
                     }
-                    finish(false);
                     
-                    //disconnect( "Not authenticated with Minecraft.net" );
+                    disconnect( "Not authenticated with Minecraft.net" );
                 } else
                 {
                     disconnect( bungee.getTranslation( "mojang_fail" ) );
@@ -412,7 +411,6 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                             UserConnection userCon = new UserConnection( bungee, ch, getName(), InitialHandler.this );
                             userCon.init();
                             userCon.setPremium(isPremium);
-                            System.out.println("IsPremium: "+isPremium);
 
                             bungee.getPluginManager().callEvent( new PostLoginEvent( userCon ) );
 
