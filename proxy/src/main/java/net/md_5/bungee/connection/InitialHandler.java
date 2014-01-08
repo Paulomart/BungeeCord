@@ -2,6 +2,8 @@ package net.md_5.bungee.connection;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
@@ -227,7 +229,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     {
         Preconditions.checkState( thisState == State.USERNAME, "Not expecting USERNAME" );
         this.loginRequest = loginRequest;
-
+        
         if ( handshake.getProtocolVersion() > bungee.getProtocolVersion() )
         {
             disconnect( bungee.getTranslation( "outdated_server" ) );
@@ -275,12 +277,39 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                 {
                     return;
                 }
-                if ( onlineMode )
-                {
-                    unsafe().sendPacket( request = EncryptionUtil.encryptRequest() );
-                } else
-                {
-                    finish();
+                //Mod Start.
+                /**     
+                 *        hasPaid	
+                 *      	|
+                 *          |           
+                 *  [TRUE]-<->[FALSE] -> finish()
+                 *     |				
+                 *     V 			
+                 * 	  encryptRequest
+                 */
+               
+                if ( onlineMode ){
+                	unsafe().sendPacket( request = EncryptionUtil.encryptRequest() );
+                }else{
+	                try{
+		                String authURL = "https://minecraft.net/haspaid.jsp?user=" + URLEncoder.encode(getName(), "UTF-8");
+		    			Callback<String> callback = new Callback<String>(){
+		    						
+		    				@Override
+		    				public void done(String result, Throwable error) {
+		    					if ("true".equals( result )) {
+		    						unsafe().sendPacket( request = EncryptionUtil.encryptRequest() );
+		    					} else {
+		    						finish(false);
+		    					}
+		    				}
+		    			};
+		    				
+		    			HttpClient.get(authURL, ch.getHandle().eventLoop(), callback);
+		                
+	                } catch (IOException ex) {
+	                	unsafe().sendPacket( request = EncryptionUtil.encryptRequest() );
+	                }
                 }
                 thisState = State.ENCRYPT;
             }
@@ -326,10 +355,12 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                     if ( obj != null )
                     {
                         UUID = obj.getId();
-                        finish();
+                        finish(true);
                         return;
                     }
-                    disconnect( "Not authenticated with Minecraft.net" );
+                    finish(false);
+                    
+                    //disconnect( "Not authenticated with Minecraft.net" );
                 } else
                 {
                     disconnect( bungee.getTranslation( "mojang_fail" ) );
@@ -341,7 +372,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
         HttpClient.get( authURL, ch.getHandle().eventLoop(), handler );
     }
 
-    private void finish()
+    private void finish(final boolean isPremium)
     {
         // Check for multiple connections
         ProxiedPlayer old = bungee.getPlayer( getName() );
@@ -380,6 +411,8 @@ public class InitialHandler extends PacketHandler implements PendingConnection
 
                             UserConnection userCon = new UserConnection( bungee, ch, getName(), InitialHandler.this );
                             userCon.init();
+                            userCon.setPremium(isPremium);
+                            System.out.println("IsPremium: "+isPremium);
 
                             bungee.getPluginManager().callEvent( new PostLoginEvent( userCon ) );
 
