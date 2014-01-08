@@ -74,6 +74,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Getter
     private List<PluginMessage> registerMessages = new ArrayList<>();
     private State thisState = State.HANDSHAKE;
+    @Getter
     private SecretKey sharedKey;
     private final Unsafe unsafe = new Unsafe()
     {
