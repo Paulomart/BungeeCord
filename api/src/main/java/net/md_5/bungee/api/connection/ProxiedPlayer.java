@@ -27,6 +27,13 @@ public interface ProxiedPlayer extends Connection, CommandSender
      */
     void setDisplayName(String name);
 
+    
+    /**
+     * Checks if a Player is logged in with Premium Account.
+     * @return
+     */
+    boolean isPremium();
+    
     /**
      * Connects / transfers this user to the specified connection, gracefully
      * closing the current one. Depending on the implementation, this method
