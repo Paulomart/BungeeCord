@@ -15,6 +15,11 @@ import java.util.Map;
 public interface ProxyConfig
 {
 
+	/**
+	 * 
+	 */
+	ServerPing.PlayerInfo[] getPingPlayers();
+	
     /**
      * Time before users are disconnected due to no network activity.
      */

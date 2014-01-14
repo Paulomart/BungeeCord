@@ -19,6 +19,7 @@ import net.md_5.bungee.api.Callback;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.ServerPing;
+import net.md_5.bungee.api.ServerPing.PlayerInfo;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ListenerInfo;
@@ -95,10 +96,9 @@ public class InitialHandler extends PacketHandler implements PendingConnection
 
     private enum State
     {
-
-        HANDSHAKE, STATUS, PING, USERNAME, ENCRYPT, FINISHED;
+    	HANDSHAKE, STATUS, PING, USERNAME, ENCRYPT, FINISHED;
     }
-
+    
     @Override
     public void connected(ChannelWrapper channel) throws Exception
     {
@@ -133,9 +133,9 @@ public class InitialHandler extends PacketHandler implements PendingConnection
 
     @Override
     public void handle(LegacyPing ping) throws Exception
-    {
-        ServerPing legacy = new ServerPing( new ServerPing.Protocol( bungee.getGameVersion(), bungee.getProtocolVersion() ),
-                new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), null ), listener.getMotd(), null );
+    {        
+    	ServerPing legacy = new ServerPing( new ServerPing.Protocol( bungee.getGameVersion(), bungee.getProtocolVersion() ),
+                new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), bungee.getConfig().getPingPlayers() ), listener.getMotd(), null );
         legacy = bungee.getPluginManager().callEvent( new ProxyPingEvent( this, legacy ) ).getResponse();
 
         String kickMessage = ChatColor.DARK_BLUE
@@ -143,7 +143,8 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                 + "\00" + legacy.getVersion().getName()
                 + "\00" + legacy.getDescription()
                 + "\00" + legacy.getPlayers().getOnline()
-                + "\00" + legacy.getPlayers().getMax();
+                + "\00" + legacy.getPlayers().getMax()
+                + "\00" + legacy.getPlayers().getSample().toString();
 
         ch.getHandle().writeAndFlush( kickMessage );
         ch.close();
@@ -152,7 +153,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Override
     public void handle(StatusRequest statusRequest) throws Exception
     {
-        Preconditions.checkState( thisState == State.STATUS, "Not expecting STATUS" );
+    	Preconditions.checkState( thisState == State.STATUS, "Not expecting STATUS" );
 
         ServerInfo forced = AbstractReconnectHandler.getForcedHost( this );
         final String motd = ( forced != null ) ? forced.getMotd() : listener.getMotd();
@@ -181,7 +182,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
         {
             pingBack.done( new ServerPing(
                     new ServerPing.Protocol( bungee.getGameVersion(), bungee.getProtocolVersion() ),
-                    new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), null ),
+                    new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), bungee.getConfig().getPingPlayers() ),
                     motd, BungeeCord.getInstance().config.favicon ),
                     null );
         }
@@ -259,7 +260,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
             disconnect( bungee.getTranslation( "already_connected" ) );
             return;
         }
-
+        
         // TODO: Nuuuu Mojang why u do this
         // unsafe().sendPacket( PacketConstants.I_AM_BUNGEE );
         // unsafe().sendPacket( PacketConstants.FORGE_MOD_REQUEST );

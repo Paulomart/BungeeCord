@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import lombok.Getter;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyConfig;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.ServerPing;
+import net.md_5.bungee.api.ServerPing.PlayerInfo;
 import net.md_5.bungee.api.config.ConfigurationAdapter;
 import net.md_5.bungee.api.config.ListenerInfo;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -51,6 +54,7 @@ public class Configuration implements ProxyConfig
     private Collection<String> disabledCommands;
     private int throttle = 4000;
     private boolean ipFoward;
+    private ServerPing.PlayerInfo[] pingPlayers;
     public String favicon;
 
     public void load()
@@ -78,6 +82,15 @@ public class Configuration implements ProxyConfig
         throttle = adapter.getInt( "connection_throttle", throttle );
         ipFoward = adapter.getBoolean( "ip_forward", ipFoward );
 
+        pingPlayers = new ServerPing.PlayerInfo[adapter.getList("ping_players", Arrays.asList("&lSpieler")).size()];
+        
+        int i = 0;
+        for (Object fakePlayer : adapter.getList("ping_players", Arrays.asList("&lSpieler"))){
+        	String playerstr = ChatColor.translateAlternateColorCodes('&', fakePlayer.toString());
+        	pingPlayers[i] = new PlayerInfo(playerstr, String.valueOf(i));
+        	i++;
+        }
+        
         disabledCommands = new CaseInsensitiveSet( (Collection<String>) adapter.getList( "disabled_commands", Arrays.asList( "find" ) ) );
 
         Preconditions.checkArgument( listeners != null && !listeners.isEmpty(), "No listeners defined." );
