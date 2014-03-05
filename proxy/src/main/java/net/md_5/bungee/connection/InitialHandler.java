@@ -19,7 +19,6 @@ import net.md_5.bungee.api.Callback;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.ServerPing;
-import net.md_5.bungee.api.ServerPing.PlayerInfo;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ListenerInfo;
@@ -156,8 +155,8 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     	Preconditions.checkState( thisState == State.STATUS, "Not expecting STATUS" );
 
         ServerInfo forced = AbstractReconnectHandler.getForcedHost( this );
-        final String motd = ( forced != null ) ? forced.getMotd() : listener.getMotd();
-
+        final String motd = ( forced != null ) ? (forced.getMotd().equalsIgnoreCase("none") ? listener.getMotd() : forced.getMotd()) : listener.getMotd();
+        
         Callback<ServerPing> pingBack = new Callback<ServerPing>()
         {
             @Override

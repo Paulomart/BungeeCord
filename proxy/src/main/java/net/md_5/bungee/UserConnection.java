@@ -27,6 +27,7 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PermissionCheckEvent;
 import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerConnectionFailedEvent;
 import net.md_5.bungee.api.score.Scoreboard;
 import net.md_5.bungee.api.tab.TabListHandler;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -224,6 +225,9 @@ public final class UserConnection implements ProxiedPlayer
                 ch.pipeline().get( HandlerBoss.class ).setHandler( new ServerConnector( bungee, UserConnection.this, target ) );
             }
         };
+        
+        final UserConnection connection = this;
+        
         ChannelFutureListener listener = new ChannelFutureListener()
         {
             @Override
@@ -246,12 +250,17 @@ public final class UserConnection implements ProxiedPlayer
                         connect( def, null, false );
                     } else
                     {
-                        if ( dimensionChange )
-                        {
-                            disconnect( bungee.getTranslation( "fallback_kick" ) + future.cause().getClass().getName() );
-                        } else
-                        {
-                            sendMessage( bungee.getTranslation( "fallback_kick" ) + future.cause().getClass().getName() );
+                        ServerConnectionFailedEvent connectionFailedEvent = new ServerConnectionFailedEvent(connection, target, dimensionChange);
+                        bungee.getPluginManager().callEvent( connectionFailedEvent );
+                        
+                        if ( !connectionFailedEvent.isCancelled() ){
+                        	if ( connectionFailedEvent.isDimensionChange() )
+                            {
+                                disconnect( bungee.getTranslation( "fallback_kick" ) + future.cause().getClass().getName() );
+                            } else
+                            {
+                                sendMessage( bungee.getTranslation( "fallback_kick" ) + future.cause().getClass().getName() );
+                            }
                         }
                     }
                 }
